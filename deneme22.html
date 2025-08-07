@@ -215,23 +215,45 @@
    /* Normal arka planınızı buraya koyun */
 body {
   
-  background: var(--bg);
+  /* Karanlık ve aydınlık temalar için arka plan rengi değişkeni kullanılıyor */
   transition: background 0.3s ease;
   
 }
 
 /* Slider değeri 11 olduğunda uygulanacak arka plan */
 body.blue {
-  background-color: rgba(0, 195, 255, 0.212);
+  background-color: rgba(88, 48, 167, 0.553);
 }
 /* Slider değeri 12 olduğunda uygulanacak arka plan */
 body.glowing-blue {
-  background-color: rgba(0, 195, 255, 0.53);
+  background-color: rgb(140, 0, 255);
 }
 
 body.void {
   background: #3d3d3d;
 }
+
+body.back{
+  background: #f0f0f0;
+}
+
+/* Slider değeri 11 olduğunda uygulanacak arka plan */
+body.blue-dark {
+  background-color: rgb(68, 20, 42);
+}
+/* Slider değeri 12 olduğunda uygulanacak arka plan */
+body.glowing-blue-dark   {
+  background-color: rgb(146, 0, 39);
+}
+
+body.void-dark {
+  background: #2a2a2a;
+}
+
+body.back-dark{
+  background: #5e3535;
+}
+
 
     .result, .special-page, .final-page {
       display: flex;
@@ -302,6 +324,20 @@ body.void {
 
       
     }
+
+    /* 1. Define a shake-text animation */
+@keyframes shake-text {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-3px); }
+  50%      { transform: translateX(3px); }
+  75%      { transform: translateX(-3px); }
+}
+
+/* 2. Helper class to apply infinite shaking */
+.shake-text {
+  display: inline-block;        /* ensure transform works */
+  animation: shake-text 0.3s ease-in-out infinite;
+}
   
   </style>
 </head>
@@ -345,6 +381,8 @@ body.void {
       else                          container.textContent = 'Mektup sekmesi seçildi.';
     }
 
+
+    
     function renderLoveMeter(container) {
       container.innerHTML = `
         <div class="love-meter">
@@ -440,35 +478,73 @@ slider.addEventListener('input', () => {
   localStorage.setItem('loveMeterValue', lastValue);
 
 
+  if (document.documentElement.getAttribute('data-theme') === 'light') {
 
-  if (lastValue >= 1 && lastValue <= 10) {
-    document.body.classList.remove('void');
-    document.body.classList.remove('blue');
-    document.body.classList.remove('glowing-blue');
-    throttledEmitHeart(slider, hearts);
-    toggleHalfRed(lastValue);
-  }
+     // Aydınlık tema için arka plan rengi
+    if (lastValue >= 1 && lastValue <= 10) {
+      document.body.classList.remove('back-dark');
+      document.body.classList.remove('void');
+      document.body.classList.remove('blue');
+      document.body.classList.remove('glowing-blue');
+      document.body.classList.add('back');
+      throttledEmitHeart(slider, hearts);
+    }
   else if (lastValue == ":(") {
+    document.body.classList.remove('back');
     document.body.classList.add('void');
   }
   else if (lastValue == 11) {
+    document.body.classList.remove('back');
     document.body.classList.remove('void');
     document.body.classList.remove('glowing-blue');
     document.body.classList.add('blue');
   }
   else if( lastValue >= 12) {
+    document.body.classList.remove('back');
     document.body.classList.remove('void');
     document.body.classList.remove('blue');
     document.body.classList.add('glowing-blue');
   } 
   else {
+    document.body.classList.remove('back');
     document.body.classList.remove('void');
     document.body.classList.remove('blue');
     document.body.classList.remove('glowing-blue');
   }
 
-
-});
+  } 
+  else {
+    if (lastValue >= 1 && lastValue <= 10) {
+    document.body.classList.remove('void-dark');
+    document.body.classList.remove('blue-dark');
+    document.body.classList.remove('glowing-blue-dark');
+    document.body.classList.add('back-dark');
+    throttledEmitHeart(slider, hearts);
+  }
+  else if (lastValue == ":(") {
+    document.body.classList.remove('back-dark');
+    document.body.classList.add('void-dark');
+  }
+  else if (lastValue == 11) {
+    document.body.classList.remove('back-dark');
+    document.body.classList.remove('void-dark');
+    document.body.classList.remove('glowing-blue-dark');
+    document.body.classList.add('blue-dark');
+  }
+  else if( lastValue >= 12) {
+    document.body.classList.remove('back-dark');
+    document.body.classList.remove('void-dark');
+    document.body.classList.remove('blue-dark');
+    document.body.classList.add('glowing-blue-dark');
+  } 
+  else {
+    document.body.classList.remove('back-dark');
+    document.body.classList.remove('void-dark');
+    document.body.classList.remove('blue-dark');
+    document.body.classList.remove('glowing-blue-dark');
+  }
+  }
+  });
 
 
 
@@ -482,6 +558,12 @@ slider.addEventListener('input', () => {
 
   // ARIA: Slider’ın değerini güncelle
   slider.setAttribute('aria-valuenow', lastValue);
+
+  // ✨ Shake the question & value when slider is max (12)
+  const questionEl = document.querySelector('.question');
+  questionEl.classList.toggle('shake-text', lastValue >= MAX_VALUE);
+  disp.classList.toggle('shake-text', lastValue >= MAX_VALUE);
+
 }
 
     }
@@ -500,9 +582,6 @@ slider.addEventListener('input', () => {
       document.getElementById('rewardBtn').addEventListener('click', () => {
         if (value === MAX_VALUE) showSpecialPage();
         else alert('yeterli sevgi girilmedi');
-        
-        
-        
       });
       
       
@@ -542,11 +621,22 @@ slider.addEventListener('input', () => {
       const saved = localStorage.getItem('theme') || 'light';
       applyTheme(saved);
       updateToggleIcon(saved);
+
       btn.addEventListener('click', () => {
-        const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        localStorage.setItem('theme', next);
-        applyTheme(next);
-        updateToggleIcon(next);
+      const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      localStorage.setItem('theme', next);
+      applyTheme(next);
+      updateToggleIcon(next);
+
+      // Arka plan rengini istediğiniz renge değiştirin
+      // Örneğin: açık tema için mavi, koyu tema için mor
+      if (next === 'light') {
+        document.body.classList.add('back');
+        document.body.classList.remove('back-dark');
+      } else {
+        document.body.classList.add('back-dark');
+        document.body.classList.remove('back');
+      }
       });
     }
 
